@@ -44,6 +44,9 @@ O Backend disponibiliza os serviços necessários para que o Frontend possa real
 Desta forma, o Backend funciona como a camada responsável pelo funcionamento interno da aplicação e pela comunicação com os dados do sistema.
 
 ## Frontend
+*Para correr o frontend:
+- cd ...\Automovel\frontend
+- npm start
 
 O Frontend é a componente responsável pela interação com o utilizador.
 
