@@ -1,0 +1,41 @@
+@startuml database-diagram
+
+!theme plain
+skinparam linetype ortho
+skinparam backgroundColor #FEFEFE
+skinparam defaultTextAlignment center
+
+title Estrutura da Base de Dados - Oficina Automóvel
+
+entity "customers" as customers {
+  *id : BIGINT <<PK>>
+  --
+  name : VARCHAR(255) <<NOT NULL>>
+  email : VARCHAR(255) <<NOT NULL, UNIQUE>>
+  phone_number : VARCHAR(255) <<NOT NULL, UNIQUE>>
+}
+
+entity "vehicles" as vehicles {
+  *id : BIGINT <<PK>>
+  --
+  license_plate : VARCHAR(255) <<NOT NULL, UNIQUE>>
+  brand : VARCHAR(255) <<NOT NULL>>
+  model : VARCHAR(255) <<NOT NULL>>
+  vehicle_year : INTEGER <<NOT NULL>>
+  mileage : INTEGER <<NOT NULL>>
+  *customer_id : BIGINT <<FK, NOT NULL>>
+}
+
+entity "appointments" as appointments {
+  *id : BIGINT <<PK>>
+  --
+  *vehicle_id : BIGINT <<FK, NOT NULL>>
+  appointment_date : TIMESTAMP <<NOT NULL>>
+  description : TEXT
+  appointment_status : VARCHAR(20) <<NOT NULL>>
+}
+
+customers ||--o{ vehicles : "has"
+vehicles ||--o{ appointments : "has"
+
+@enduml
