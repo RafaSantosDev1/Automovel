@@ -64,6 +64,10 @@ export class DashboardComponent implements OnInit {
       .slice(0, 5);
   }
 
+  get pendingCount(): number {
+    return this.appointments.filter((a) => a.status === 'SCHEDULED').length;
+  }
+
   formatDate(value: string): string {
     const d = new Date(value);
     return d.toLocaleString('pt-PT');

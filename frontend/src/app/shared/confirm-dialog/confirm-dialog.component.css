@@ -1,62 +1,40 @@
 .dialog-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(15, 23, 42, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
 .dialog {
   background: #ffffff;
-  border-radius: 10px;
-  padding: 20px;
-  width: 360px;
-  max-width: 92vw;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+  border: 1px solid #e2e8f0;
 }
 
 .dialog-title {
   margin: 0 0 8px;
   font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .dialog-message {
-  margin: 0 0 16px;
+  margin: 0 0 20px;
   font-size: 14px;
-  color: #4b5563;
+  color: #64748b;
+  line-height: 1.5;
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-}
-
-.btn {
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn-secondary {
-  background: #e5e7eb;
-  color: #111827;
-}
-
-.btn-danger {
-  background: #dc2626;
-  color: #ffffff;
-}
-
-.btn-primary {
-  background: #2563eb;
-  color: #ffffff;
-}
-
-.btn:hover {
-  filter: brightness(0.95);
+  gap: 10px;
 }

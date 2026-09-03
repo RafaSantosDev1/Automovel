@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { CustomerService } from '../../services/customer.service';
 import { Customer } from '../../models/customer.model';
 import { LoadingSpinnerComponent } from '../../shared/loading-spinner/loading-spinner.component';
@@ -9,7 +10,7 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dial
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LoadingSpinnerComponent, ConfirmDialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, LoadingSpinnerComponent, ConfirmDialogComponent],
   templateUrl: './customers.component.html',
   styleUrl: './customers.component.css'
 })
@@ -25,8 +26,13 @@ export class CustomersComponent implements OnInit {
   vehiclesOfCustomer: { id: number; licensePlate: string; brand: string; model: string }[] = [];
   selectedCustomerId: number | null = null;
   deleteTarget: Customer | null = null;
+  searchTerm = '';
 
-  constructor(private customerService: CustomerService, private fb: FormBuilder) {
+  constructor(
+    private customerService: CustomerService,
+    private fb: FormBuilder,
+    private router: Router
+  ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -51,6 +57,16 @@ export class CustomersComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  get filteredCustomers(): Customer[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) return this.customers;
+    return this.customers.filter((c) =>
+      c.name.toLowerCase().includes(term) ||
+      c.email.toLowerCase().includes(term) ||
+      c.phoneNumber.toLowerCase().includes(term)
+    );
   }
 
   openCreate(): void {
@@ -125,5 +141,9 @@ export class CustomersComponent implements OnInit {
       next: (data: { id: number; licensePlate: string; brand: string; model: string }[]) => (this.vehiclesOfCustomer = data),
       error: () => (this.vehiclesOfCustomer = [])
     });
+  }
+
+  goToNewVehicle(): void {
+    this.router.navigate(['/vehicles']);
   }
 }

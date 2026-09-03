@@ -1,4 +1,5 @@
 com\automovel\automovel\entity\Vehicle.class
+com\automovel\automovel\config\CorsConfig.class
 com\automovel\automovel\exception\DuplicateResourceException.class
 com\automovel\automovel\controller\AppointmentController.class
 com\automovel\automovel\entity\AppointmentStatus.class

@@ -26,6 +26,8 @@ export class AppointmentsComponent implements OnInit {
   saveError: string | null = null;
   deleteTarget: Appointment | null = null;
   statuses: AppointmentStatus[] = ['SCHEDULED', 'CANCELLED', 'COMPLETED'];
+  statusFilter: AppointmentStatus | 'ALL' = 'ALL';
+  filterOptions: ('ALL' | AppointmentStatus)[] = ['ALL', 'SCHEDULED', 'CANCELLED', 'COMPLETED'];
 
   constructor(
     private appointmentService: AppointmentService,
@@ -63,6 +65,11 @@ export class AppointmentsComponent implements OnInit {
       next: (data: { id: number; licensePlate: string; brand: string; model: string }[]) => (this.vehicles = data),
       error: () => (this.vehicles = [])
     });
+  }
+
+  get filteredAppointments(): Appointment[] {
+    if (this.statusFilter === 'ALL') return this.appointments;
+    return this.appointments.filter((a) => a.status === this.statusFilter);
   }
 
   openCreate(): void {
@@ -133,24 +140,65 @@ export class AppointmentsComponent implements OnInit {
 
   getVehicleLabel(vehicleId: number): string {
     const v = this.vehicles.find((x) => x.id === vehicleId);
-    return v ? `${v.licensePlate} — ${v.brand} ${v.model}` : `#${vehicleId}`;
+    return v ? `${v.licensePlate} — ${v.brand} ${v.model}` : `Veículo #${vehicleId}`;
   }
 
   statusClass(status: AppointmentStatus): string {
     switch (status) {
       case 'SCHEDULED':
-        return 'status-scheduled';
+        return 'badge-scheduled';
       case 'CANCELLED':
-        return 'status-cancelled';
+        return 'badge-cancelled';
       case 'COMPLETED':
-        return 'status-completed';
+        return 'badge-completed';
       default:
         return '';
     }
   }
 
+  statusLabel(status: AppointmentStatus): string {
+    switch (status) {
+      case 'SCHEDULED':
+        return 'Agendada';
+      case 'CANCELLED':
+        return 'Cancelada';
+      case 'COMPLETED':
+        return 'Concluída';
+      default:
+        return status;
+    }
+  }
+
   formatDate(value: string): string {
+    if (!value) return '—';
     const d = new Date(value);
-    return d.toLocaleString('pt-PT');
+    return d.toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' });
+  }
+
+  formatDateOnly(value: string): string {
+    if (!value) return '—';
+    const d = new Date(value);
+    return d.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  formatTimeOnly(value: string): string {
+    if (!value) return '—';
+    const d = new Date(value);
+    return d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  groupByDate(items: Appointment[]): { date: string; items: Appointment[] }[] {
+    const groups: { [key: string]: Appointment[] } = {};
+    items.forEach((a) => {
+      const dateKey = new Date(a.appointmentDate).toLocaleDateString('pt-PT', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(a);
+    });
+    return Object.keys(groups).map((date) => ({ date, items: groups[date] }));
   }
 }

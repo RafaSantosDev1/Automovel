@@ -1,72 +1,112 @@
 <div class="page-header">
-  <h1>Clientes</h1>
-  <button class="btn btn-primary" (click)="openCreate()">+ Novo cliente</button>
+  <div class="title-section">
+    <h1>Clientes</h1>
+    <p>Gestão de clientes da oficina</p>
+  </div>
+  <div class="actions">
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Pesquisar por nome, email ou telefone..." [(ngModel)]="searchTerm" />
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <span>＋</span> Novo cliente
+    </button>
+  </div>
 </div>
 
 <app-loading-spinner *ngIf="loading"></app-loading-spinner>
 
-<div class="error" *ngIf="error">{{ error }}</div>
+<div class="alert-error" *ngIf="error">{{ error }}</div>
 
 <div class="card" *ngIf="!loading">
-  <table class="table">
+  <div class="empty-state" *ngIf="filteredCustomers.length === 0 && customers.length === 0">
+    <div class="empty-icon">👤</div>
+    <p>Ainda não tem clientes registados.</p>
+    <button class="btn btn-primary" (click)="openCreate()">Adicionar primeiro cliente</button>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredCustomers.length === 0 && customers.length > 0">
+    <div class="empty-icon">🔍</div>
+    <p>Nenhum cliente corresponde à pesquisa.</p>
+  </div>
+
+  <table class="data-table" *ngIf="filteredCustomers.length > 0">
     <thead>
       <tr>
-        <th>Nome</th>
+        <th>Cliente</th>
         <th>Email</th>
         <th>Telefone</th>
-        <th>Ações</th>
+        <th>Veículos</th>
+        <th style="text-align: right;">Ações</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let customer of customers">
-        <td>{{ customer.name }}</td>
+      <tr *ngFor="let customer of filteredCustomers">
+        <td>
+          <div class="customer-cell">
+            <div class="avatar">{{ customer.name.charAt(0).toUpperCase() }}</div>
+            <div class="customer-name">{{ customer.name }}</div>
+          </div>
+        </td>
         <td>{{ customer.email }}</td>
         <td>{{ customer.phoneNumber }}</td>
-        <td class="actions">
-          <button class="btn btn-small btn-secondary" (click)="viewVehicles(customer.id)">Ver veículos</button>
-          <button class="btn btn-small btn-secondary" (click)="openEdit(customer)">Editar</button>
-          <button class="btn btn-small btn-danger" (click)="confirmDelete(customer)">Eliminar</button>
+        <td>
+          <button class="btn btn-sm btn-ghost" (click)="viewVehicles(customer.id)">
+            Ver veículos
+          </button>
         </td>
-      </tr>
-      <tr *ngIf="customers.length === 0">
-        <td colspan="4" class="empty-row">Sem clientes.</td>
+        <td class="actions-cell">
+          <button class="btn btn-sm btn-secondary" (click)="openEdit(customer)">Editar</button>
+          <button class="btn btn-sm btn-danger" (click)="confirmDelete(customer)">Eliminar</button>
+        </td>
       </tr>
     </tbody>
   </table>
 </div>
 
 <div class="panel" *ngIf="selectedCustomerId !== null">
-  <h3>Veículos do cliente #{{ selectedCustomerId }}</h3>
+  <div class="panel-header">
+    <h3>Veículos do cliente</h3>
+    <button class="btn btn-sm btn-ghost" (click)="selectedCustomerId = null">Fechar ✕</button>
+  </div>
   <ul class="mini-list" *ngIf="vehiclesOfCustomer.length > 0; else noVehicles">
     <li *ngFor="let v of vehiclesOfCustomer">
-      {{ v.licensePlate }} — {{ v.brand }} {{ v.model }}
+      <span class="plate-tag">{{ v.licensePlate }}</span>
+      <span>{{ v.brand }} {{ v.model }}</span>
     </li>
   </ul>
   <ng-template #noVehicles>
-    <p class="empty">Sem veículos.</p>
+    <p class="empty-msg">Este cliente ainda não tem veículos.</p>
   </ng-template>
 </div>
 
 <div class="modal-backdrop" *ngIf="showForm">
   <div class="modal">
-    <h3>{{ editingId ? 'Editar cliente' : 'Novo cliente' }}</h3>
+    <div class="modal-header">
+      <h3>{{ editingId ? 'Editar cliente' : 'Novo cliente' }}</h3>
+      <button class="btn btn-sm btn-ghost" (click)="closeForm()">✕</button>
+    </div>
     <form [formGroup]="form" (ngSubmit)="save()">
-      <label>
-        Nome
-        <input formControlName="name" />
-      </label>
-      <label>
-        Email
-        <input formControlName="email" />
-      </label>
-      <label>
-        Telefone
-        <input formControlName="phoneNumber" />
-      </label>
-      <div class="form-error" *ngIf="saveError">{{ saveError }}</div>
-      <div class="modal-actions">
+      <div class="form-grid">
+        <div class="form-field full-width">
+          <label class="form-label">Nome</label>
+          <input class="form-input" formControlName="name" placeholder="Nome completo" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Email</label>
+          <input class="form-input" formControlName="email" placeholder="email@exemplo.pt" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Telefone</label>
+          <input class="form-input" formControlName="phoneNumber" placeholder="912345678" />
+        </div>
+      </div>
+      <div class="form-error-msg" *ngIf="saveError">{{ saveError }}</div>
+      <div class="form-actions">
         <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancelar</button>
-        <button type="submit" class="btn btn-primary" [disabled]="isSaving || form.invalid">Guardar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving || form.invalid">
+          {{ isSaving ? 'A guardar...' : (editingId ? 'Atualizar' : 'Criar') }}
+        </button>
       </div>
     </form>
   </div>
@@ -75,7 +115,7 @@
 <app-confirm-dialog
   *ngIf="deleteTarget"
   [title]="'Eliminar cliente'"
-  [message]="'Eliminar cliente ' + deleteTarget!.name + '?'"
+  [message]="'Tem a certeza que pretende eliminar ' + deleteTarget!.name + '? Esta ação não pode ser revertida.'"
   (confirm)="delete()"
   (cancel)="deleteTarget = null"
 ></app-confirm-dialog>

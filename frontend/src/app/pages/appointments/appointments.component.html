@@ -1,72 +1,101 @@
 <div class="page-header">
-  <h1>Marcções</h1>
-  <button class="btn btn-primary" (click)="openCreate()">+ Nova marcação</button>
+  <div class="title-section">
+    <h1>Marcações</h1>
+    <p>Agenda de marcações da oficina</p>
+  </div>
+  <div class="actions">
+    <div class="status-filter">
+      <button
+        *ngFor="let s of filterOptions"
+        class="filter-btn"
+        [class.active]="statusFilter === s"
+        (click)="statusFilter = s">
+        {{ s === 'ALL' ? 'Todas' : statusLabel(s) }}
+      </button>
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <span>＋</span> Nova marcação
+    </button>
+  </div>
 </div>
 
 <app-loading-spinner *ngIf="loading"></app-loading-spinner>
 
-<div class="error" *ngIf="error">{{ error }}</div>
+<div class="alert-error" *ngIf="error">{{ error }}</div>
 
-<div class="card" *ngIf="!loading">
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Veículo</th>
-        <th>Descrição</th>
-        <th>Estado</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let appt of appointments">
-        <td>{{ formatDate(appt.appointmentDate) }}</td>
-        <td>{{ getVehicleLabel(appt.vehicleId) }}</td>
-        <td>{{ appt.description }}</td>
-        <td>
-          <span class="badge" [class]="statusClass(appt.status)">{{ appt.status }}</span>
-        </td>
-        <td class="actions">
-          <button class="btn btn-small btn-secondary" (click)="openEdit(appt)">Editar</button>
-          <button class="btn btn-small btn-danger" (click)="confirmDelete(appt)">Eliminar</button>
-        </td>
-      </tr>
-      <tr *ngIf="appointments.length === 0">
-        <td colspan="5" class="empty-row">Sem marcações.</td>
-      </tr>
-    </tbody>
-  </table>
+<div class="appointments-container" *ngIf="!loading">
+  <div class="empty-state" *ngIf="filteredAppointments.length === 0">
+    <div class="empty-icon">📅</div>
+    <p>Nenhuma marcação encontrada.</p>
+    <button class="btn btn-primary" (click)="openCreate()">Criar primeira marcação</button>
+  </div>
+
+  <div class="date-group" *ngFor="let group of groupByDate(filteredAppointments)">
+    <h3 class="date-header">{{ group.date }}</h3>
+    <div class="appointments-list">
+      <div class="appointment-card" *ngFor="let appt of group.items">
+        <div class="time-block">
+          <div class="time">{{ formatTimeOnly(appt.appointmentDate) }}</div>
+          <div class="time-line"></div>
+        </div>
+        <div class="appointment-body">
+          <div class="appointment-header">
+            <span class="plate-tag">{{ getVehicleLabel(appt.vehicleId).split(' — ')[0] }}</span>
+            <span class="vehicle-name">{{ getVehicleLabel(appt.vehicleId).split(' — ')[1] }}</span>
+            <span class="badge" [class]="statusClass(appt.status)">{{ statusLabel(appt.status) }}</span>
+          </div>
+          <div class="appointment-description" *ngIf="appt.description">
+            {{ appt.description }}
+          </div>
+          <div class="appointment-actions">
+            <button class="btn btn-sm btn-secondary" (click)="openEdit(appt)">Editar</button>
+            <button class="btn btn-sm btn-danger" (click)="confirmDelete(appt)">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-backdrop" *ngIf="showForm">
   <div class="modal">
-    <h3>{{ editingId ? 'Editar marcação' : 'Nova marcação' }}</h3>
+    <div class="modal-header">
+      <h3>{{ editingId ? 'Editar marcação' : 'Nova marcação' }}</h3>
+      <button class="btn btn-sm btn-ghost" (click)="closeForm()">✕</button>
+    </div>
     <form [formGroup]="form" (ngSubmit)="save()">
-      <label>
-        Veículo
-        <select formControlName="vehicleId">
-          <option value="">Selecionar veículo</option>
-          <option *ngFor="let v of vehicles" [value]="v.id">{{ v.licensePlate }} — {{ v.brand }} {{ v.model }}</option>
-        </select>
-      </label>
-      <label>
-        Data e hora
-        <input type="datetime-local" formControlName="appointmentDate" />
-      </label>
-      <label>
-        Descrição
-        <textarea formControlName="description" rows="3"></textarea>
-      </label>
-      <label>
-        Estado
-        <select formControlName="status">
-          <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
-        </select>
-      </label>
-      <div class="form-error" *ngIf="saveError">{{ saveError }}</div>
-      <div class="modal-actions">
+      <div class="form-grid">
+        <div class="form-field full-width">
+          <label class="form-label">Veículo</label>
+          <select class="form-input" formControlName="vehicleId">
+            <option [ngValue]="null">Selecionar veículo...</option>
+            <option *ngFor="let v of vehicles" [ngValue]="v.id">
+              {{ v.licensePlate }} — {{ v.brand }} {{ v.model }}
+            </option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Data e hora</label>
+          <input class="form-input" type="datetime-local" formControlName="appointmentDate" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Estado</label>
+          <select class="form-input" formControlName="status">
+            <option *ngFor="let s of statuses" [ngValue]="s">{{ statusLabel(s) }}</option>
+          </select>
+        </div>
+        <div class="form-field full-width">
+          <label class="form-label">Descrição do serviço</label>
+          <textarea class="form-input" formControlName="description" rows="3"
+            placeholder="Ex: Revisão completa, troca de travões..."></textarea>
+        </div>
+      </div>
+      <div class="form-error-msg" *ngIf="saveError">{{ saveError }}</div>
+      <div class="form-actions">
         <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancelar</button>
-        <button type="submit" class="btn btn-primary" [disabled]="isSaving || form.invalid">Guardar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving || form.invalid">
+          {{ isSaving ? 'A guardar...' : (editingId ? 'Atualizar' : 'Criar') }}
+        </button>
       </div>
     </form>
   </div>
@@ -75,7 +104,7 @@
 <app-confirm-dialog
   *ngIf="deleteTarget"
   [title]="'Eliminar marcação'"
-  [message]="'Eliminar marcação de ' + getVehicleLabel(deleteTarget!.vehicleId) + '?'"
+  [message]="'Tem a certeza que pretende eliminar esta marcação? Esta ação não pode ser revertida.'"
   (confirm)="delete()"
   (cancel)="deleteTarget = null"
 ></app-confirm-dialog>

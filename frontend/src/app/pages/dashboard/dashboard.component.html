@@ -1,35 +1,81 @@
-<div class="dashboard" *ngIf="!loading; else loadingTpl">
-  <div class="cards">
-    <div class="card">
-      <div class="card-value">{{ customers.length }}</div>
-      <div class="card-label">Clientes</div>
-    </div>
-    <div class="card">
-      <div class="card-value">{{ vehicles.length }}</div>
-      <div class="card-label">Veículos</div>
-    </div>
-    <div class="card">
-      <div class="card-value">{{ appointments.length }}</div>
-      <div class="card-label">Marcações</div>
-    </div>
+<div class="page-header">
+  <div class="title-section">
+    <h1>Dashboard</h1>
+    <p>Visão geral da oficina e atividade recente</p>
   </div>
-
-  <div class="upcoming" *ngIf="upcomingAppointments.length > 0">
-    <h2>Próximas marcações</h2>
-    <ul class="appointment-list">
-      <li class="appointment-item" *ngFor="let appt of upcomingAppointments">
-        <span class="appt-date">{{ formatDate(appt.appointmentDate) }}</span>
-        <span class="appt-status">Veículo #{{ appt.vehicleId }}</span>
-        <span class="appt-desc">{{ appt.description }}</span>
-      </li>
-    </ul>
-  </div>
-
-  <div class="empty" *ngIf="upcomingAppointments.length === 0">
-    Sem marcações próximas.
+  <div class="actions">
+    <button class="btn btn-primary" routerLink="/customers">
+      <span>👤</span> Novo cliente
+    </button>
+    <button class="btn btn-primary" routerLink="/vehicles">
+      <span>🚘</span> Novo veículo
+    </button>
+    <button class="btn btn-primary" routerLink="/appointments">
+      <span>📅</span> Nova marcação
+    </button>
   </div>
 </div>
 
-<ng-template #loadingTpl>
-  <app-loading-spinner></app-loading-spinner>
-</ng-template>
+<app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+<div class="alert-error" *ngIf="error">{{ error }}</div>
+
+<div class="dashboard-grid" *ngIf="!loading">
+  <div class="stats-grid">
+    <div class="stats-card accent-blue">
+      <div class="stat-bg">👤</div>
+      <div class="stat-value">{{ customers.length }}</div>
+      <div class="stat-label">Clientes</div>
+    </div>
+    <div class="stats-card accent-blue">
+      <div class="stat-bg">🚘</div>
+      <div class="stat-value">{{ vehicles.length }}</div>
+      <div class="stat-label">Veículos</div>
+    </div>
+    <div class="stats-card accent-blue">
+      <div class="stat-bg">📅</div>
+      <div class="stat-value">{{ appointments.length }}</div>
+      <div class="stat-label">Marcações</div>
+    </div>
+    <div class="stats-card accent-orange">
+      <div class="stat-bg">⏳</div>
+      <div class="stat-value">{{ pendingCount }}</div>
+      <div class="stat-label">Pendentes</div>
+    </div>
+  </div>
+
+  <div class="dashboard-section">
+    <div class="card">
+      <div class="section-header">
+        <h2>Próximas marcações</h2>
+        <a routerLink="/appointments" class="view-all">Ver todas →</a>
+      </div>
+
+      <div class="empty-state" *ngIf="upcomingAppointments.length === 0">
+        <div class="empty-icon">📅</div>
+        <p>Sem marcações agendadas.</p>
+      </div>
+
+      <table class="data-table" *ngIf="upcomingAppointments.length > 0">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Veículo</th>
+            <th>Descrição</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let appt of upcomingAppointments">
+            <td>{{ formatDate(appt.appointmentDate) }}</td>
+            <td>#{{ appt.vehicleId }}</td>
+            <td>{{ appt.description || '—' }}</td>
+            <td>
+              <span class="badge badge-scheduled">{{ appt.status }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

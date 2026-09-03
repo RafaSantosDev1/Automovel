@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { VehicleService } from '../../services/vehicle.service';
 import { CustomerService } from '../../services/customer.service';
 import { Vehicle } from '../../models/vehicle.model';
@@ -10,7 +10,7 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dial
 @Component({
   selector: 'app-vehicles',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LoadingSpinnerComponent, ConfirmDialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, LoadingSpinnerComponent, ConfirmDialogComponent],
   templateUrl: './vehicles.component.html',
   styleUrl: './vehicles.component.css'
 })
@@ -25,6 +25,7 @@ export class VehiclesComponent implements OnInit {
   isSaving = false;
   saveError: string | null = null;
   deleteTarget: Vehicle | null = null;
+  searchTerm = '';
 
   constructor(
     private vehicleService: VehicleService,
@@ -61,6 +62,20 @@ export class VehiclesComponent implements OnInit {
     this.vehicleService.getCustomers().subscribe({
       next: (data: { id: number; name: string }[]) => (this.customers = data),
       error: () => (this.customers = [])
+    });
+  }
+
+  get filteredVehicles(): Vehicle[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) return this.vehicles;
+    return this.vehicles.filter((v) => {
+      const customerName = this.getCustomerName(v.customerId).toLowerCase();
+      return (
+        v.licensePlate.toLowerCase().includes(term) ||
+        v.brand.toLowerCase().includes(term) ||
+        v.model.toLowerCase().includes(term) ||
+        customerName.includes(term)
+      );
     });
   }
 

@@ -1,40 +1,64 @@
 <div class="page-header">
-  <h1>Veículos</h1>
-  <button class="btn btn-primary" (click)="openCreate()">+ Novo veículo</button>
+  <div class="title-section">
+    <h1>Veículos</h1>
+    <p>Gestão de veículos dos clientes</p>
+  </div>
+  <div class="actions">
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Pesquisar por matrícula, marca, modelo, cliente..." [(ngModel)]="searchTerm" />
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <span>＋</span> Novo veículo
+    </button>
+  </div>
 </div>
 
 <app-loading-spinner *ngIf="loading"></app-loading-spinner>
 
-<div class="error" *ngIf="error">{{ error }}</div>
+<div class="alert-error" *ngIf="error">{{ error }}</div>
 
 <div class="card" *ngIf="!loading">
-  <table class="table">
+  <div class="empty-state" *ngIf="filteredVehicles.length === 0 && vehicles.length === 0">
+    <div class="empty-icon">🚘</div>
+    <p>Ainda não tem veículos registados.</p>
+    <button class="btn btn-primary" (click)="openCreate()">Adicionar primeiro veículo</button>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredVehicles.length === 0 && vehicles.length > 0">
+    <div class="empty-icon">🔍</div>
+    <p>Nenhum veículo corresponde à pesquisa.</p>
+  </div>
+
+  <table class="data-table" *ngIf="filteredVehicles.length > 0">
     <thead>
       <tr>
         <th>Matrícula</th>
-        <th>Marca</th>
-        <th>Modelo</th>
+        <th>Marca / Modelo</th>
         <th>Ano</th>
         <th>Quilometragem</th>
-        <th>Cliente</th>
-        <th>Ações</th>
+        <th>Proprietário</th>
+        <th style="text-align: right;">Ações</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let vehicle of vehicles">
-        <td>{{ vehicle.licensePlate }}</td>
-        <td>{{ vehicle.brand }}</td>
-        <td>{{ vehicle.model }}</td>
-        <td>{{ vehicle.year }}</td>
-        <td>{{ vehicle.mileage }} km</td>
-        <td>{{ getCustomerName(vehicle.customerId) }}</td>
-        <td class="actions">
-          <button class="btn btn-small btn-secondary" (click)="openEdit(vehicle)">Editar</button>
-          <button class="btn btn-small btn-danger" (click)="confirmDelete(vehicle)">Eliminar</button>
+      <tr *ngFor="let vehicle of filteredVehicles">
+        <td>
+          <span class="plate-tag">{{ vehicle.licensePlate }}</span>
         </td>
-      </tr>
-      <tr *ngIf="vehicles.length === 0">
-        <td colspan="7" class="empty-row">Sem veículos.</td>
+        <td>
+          <div class="vehicle-cell">
+            <div class="vehicle-brand">{{ vehicle.brand }}</div>
+            <div class="vehicle-model">{{ vehicle.model }}</div>
+          </div>
+        </td>
+        <td>{{ vehicle.year }}</td>
+        <td>{{ vehicle.mileage | number }} km</td>
+        <td>{{ getCustomerName(vehicle.customerId) }}</td>
+        <td class="actions-cell">
+          <button class="btn btn-sm btn-secondary" (click)="openEdit(vehicle)">Editar</button>
+          <button class="btn btn-sm btn-danger" (click)="confirmDelete(vehicle)">Eliminar</button>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -42,39 +66,46 @@
 
 <div class="modal-backdrop" *ngIf="showForm">
   <div class="modal">
-    <h3>{{ editingId ? 'Editar veículo' : 'Novo veículo' }}</h3>
+    <div class="modal-header">
+      <h3>{{ editingId ? 'Editar veículo' : 'Novo veículo' }}</h3>
+      <button class="btn btn-sm btn-ghost" (click)="closeForm()">✕</button>
+    </div>
     <form [formGroup]="form" (ngSubmit)="save()">
-      <label>
-        Matrícula
-        <input formControlName="licensePlate" />
-      </label>
-      <label>
-        Marca
-        <input formControlName="brand" />
-      </label>
-      <label>
-        Modelo
-        <input formControlName="model" />
-      </label>
-      <label>
-        Ano
-        <input type="number" formControlName="year" />
-      </label>
-      <label>
-        Quilometragem
-        <input type="number" formControlName="mileage" />
-      </label>
-      <label>
-        Cliente
-        <select formControlName="customerId">
-          <option value="">Selecionar cliente</option>
-          <option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</option>
-        </select>
-      </label>
-      <div class="form-error" *ngIf="saveError">{{ saveError }}</div>
-      <div class="modal-actions">
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label">Matrícula</label>
+          <input class="form-input plate-input" formControlName="licensePlate" placeholder="AB-12-CD" style="text-transform: uppercase;" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Proprietário</label>
+          <select class="form-input" formControlName="customerId">
+            <option [ngValue]="null">Selecionar cliente...</option>
+            <option *ngFor="let c of customers" [ngValue]="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Marca</label>
+          <input class="form-input" formControlName="brand" placeholder="Ex: Toyota" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Modelo</label>
+          <input class="form-input" formControlName="model" placeholder="Ex: Corolla" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Ano</label>
+          <input class="form-input" type="number" formControlName="year" placeholder="2020" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Quilometragem (km)</label>
+          <input class="form-input" type="number" formControlName="mileage" placeholder="50000" />
+        </div>
+      </div>
+      <div class="form-error-msg" *ngIf="saveError">{{ saveError }}</div>
+      <div class="form-actions">
         <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancelar</button>
-        <button type="submit" class="btn btn-primary" [disabled]="isSaving || form.invalid">Guardar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving || form.invalid">
+          {{ isSaving ? 'A guardar...' : (editingId ? 'Atualizar' : 'Criar') }}
+        </button>
       </div>
     </form>
   </div>
@@ -83,7 +114,7 @@
 <app-confirm-dialog
   *ngIf="deleteTarget"
   [title]="'Eliminar veículo'"
-  [message]="'Eliminar veículo ' + deleteTarget!.licensePlate + '?'"
+  [message]="'Tem a certeza que pretende eliminar o veículo ' + deleteTarget!.licensePlate + '? Esta ação não pode ser revertida.'"
   (confirm)="delete()"
   (cancel)="deleteTarget = null"
 ></app-confirm-dialog>
