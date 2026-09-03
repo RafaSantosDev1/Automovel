@@ -1,0 +1,35 @@
+<div class="dashboard" *ngIf="!loading; else loadingTpl">
+  <div class="cards">
+    <div class="card">
+      <div class="card-value">{{ customers.length }}</div>
+      <div class="card-label">Clientes</div>
+    </div>
+    <div class="card">
+      <div class="card-value">{{ vehicles.length }}</div>
+      <div class="card-label">Veículos</div>
+    </div>
+    <div class="card">
+      <div class="card-value">{{ appointments.length }}</div>
+      <div class="card-label">Marcações</div>
+    </div>
+  </div>
+
+  <div class="upcoming" *ngIf="upcomingAppointments.length > 0">
+    <h2>Próximas marcações</h2>
+    <ul class="appointment-list">
+      <li class="appointment-item" *ngFor="let appt of upcomingAppointments">
+        <span class="appt-date">{{ formatDate(appt.appointmentDate) }}</span>
+        <span class="appt-status">Veículo #{{ appt.vehicleId }}</span>
+        <span class="appt-desc">{{ appt.description }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="empty" *ngIf="upcomingAppointments.length === 0">
+    Sem marcações próximas.
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <app-loading-spinner></app-loading-spinner>
+</ng-template>

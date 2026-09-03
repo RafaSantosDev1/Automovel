@@ -1,0 +1,89 @@
+<div class="page-header">
+  <h1>Veículos</h1>
+  <button class="btn btn-primary" (click)="openCreate()">+ Novo veículo</button>
+</div>
+
+<app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+<div class="error" *ngIf="error">{{ error }}</div>
+
+<div class="card" *ngIf="!loading">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Matrícula</th>
+        <th>Marca</th>
+        <th>Modelo</th>
+        <th>Ano</th>
+        <th>Quilometragem</th>
+        <th>Cliente</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let vehicle of vehicles">
+        <td>{{ vehicle.licensePlate }}</td>
+        <td>{{ vehicle.brand }}</td>
+        <td>{{ vehicle.model }}</td>
+        <td>{{ vehicle.year }}</td>
+        <td>{{ vehicle.mileage }} km</td>
+        <td>{{ getCustomerName(vehicle.customerId) }}</td>
+        <td class="actions">
+          <button class="btn btn-small btn-secondary" (click)="openEdit(vehicle)">Editar</button>
+          <button class="btn btn-small btn-danger" (click)="confirmDelete(vehicle)">Eliminar</button>
+        </td>
+      </tr>
+      <tr *ngIf="vehicles.length === 0">
+        <td colspan="7" class="empty-row">Sem veículos.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-backdrop" *ngIf="showForm">
+  <div class="modal">
+    <h3>{{ editingId ? 'Editar veículo' : 'Novo veículo' }}</h3>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label>
+        Matrícula
+        <input formControlName="licensePlate" />
+      </label>
+      <label>
+        Marca
+        <input formControlName="brand" />
+      </label>
+      <label>
+        Modelo
+        <input formControlName="model" />
+      </label>
+      <label>
+        Ano
+        <input type="number" formControlName="year" />
+      </label>
+      <label>
+        Quilometragem
+        <input type="number" formControlName="mileage" />
+      </label>
+      <label>
+        Cliente
+        <select formControlName="customerId">
+          <option value="">Selecionar cliente</option>
+          <option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </label>
+      <div class="form-error" *ngIf="saveError">{{ saveError }}</div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving || form.invalid">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="deleteTarget"
+  [title]="'Eliminar veículo'"
+  [message]="'Eliminar veículo ' + deleteTarget!.licensePlate + '?'"
+  (confirm)="delete()"
+  (cancel)="deleteTarget = null"
+></app-confirm-dialog>

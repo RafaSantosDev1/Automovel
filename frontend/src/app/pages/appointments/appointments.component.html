@@ -1,0 +1,81 @@
+<div class="page-header">
+  <h1>Marcções</h1>
+  <button class="btn btn-primary" (click)="openCreate()">+ Nova marcação</button>
+</div>
+
+<app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+<div class="error" *ngIf="error">{{ error }}</div>
+
+<div class="card" *ngIf="!loading">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Veículo</th>
+        <th>Descrição</th>
+        <th>Estado</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let appt of appointments">
+        <td>{{ formatDate(appt.appointmentDate) }}</td>
+        <td>{{ getVehicleLabel(appt.vehicleId) }}</td>
+        <td>{{ appt.description }}</td>
+        <td>
+          <span class="badge" [class]="statusClass(appt.status)">{{ appt.status }}</span>
+        </td>
+        <td class="actions">
+          <button class="btn btn-small btn-secondary" (click)="openEdit(appt)">Editar</button>
+          <button class="btn btn-small btn-danger" (click)="confirmDelete(appt)">Eliminar</button>
+        </td>
+      </tr>
+      <tr *ngIf="appointments.length === 0">
+        <td colspan="5" class="empty-row">Sem marcações.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-backdrop" *ngIf="showForm">
+  <div class="modal">
+    <h3>{{ editingId ? 'Editar marcação' : 'Nova marcação' }}</h3>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label>
+        Veículo
+        <select formControlName="vehicleId">
+          <option value="">Selecionar veículo</option>
+          <option *ngFor="let v of vehicles" [value]="v.id">{{ v.licensePlate }} — {{ v.brand }} {{ v.model }}</option>
+        </select>
+      </label>
+      <label>
+        Data e hora
+        <input type="datetime-local" formControlName="appointmentDate" />
+      </label>
+      <label>
+        Descrição
+        <textarea formControlName="description" rows="3"></textarea>
+      </label>
+      <label>
+        Estado
+        <select formControlName="status">
+          <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+        </select>
+      </label>
+      <div class="form-error" *ngIf="saveError">{{ saveError }}</div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving || form.invalid">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="deleteTarget"
+  [title]="'Eliminar marcação'"
+  [message]="'Eliminar marcação de ' + getVehicleLabel(deleteTarget!.vehicleId) + '?'"
+  (confirm)="delete()"
+  (cancel)="deleteTarget = null"
+></app-confirm-dialog>

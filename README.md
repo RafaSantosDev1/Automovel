@@ -30,6 +30,11 @@ Entre as principais operações do sistema encontram-se:
 
 ## Backend
 
+* cd Automovel\backend> mvn spring-boot:run
+Para iniciar o backend é necessário executar o seguinte comando:
+
+- mvn spring-boot:run
+
 O Backend é responsável por toda a lógica e gestão dos dados da aplicação.
 
 É a componente responsável por receber os pedidos provenientes do Frontend, processar as operações solicitadas, aplicar as regras de negócio e gerir a informação armazenada no sistema.

@@ -38,13 +38,15 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
+    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long id,
+            @Valid @RequestBody CustomerRequest request) {
         CustomerDTO customer = customerService.updateCustomer(id, request);
         return ResponseEntity.ok(customer);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CustomerDTO> patchCustomer(@PathVariable Long id, @RequestBody CustomerUpdateRequest request) {
+    public ResponseEntity<CustomerDTO> patchCustomer(@PathVariable Long id,
+            @RequestBody CustomerUpdateRequest request) {
         CustomerDTO customer = customerService.patchCustomer(id, request);
         return ResponseEntity.ok(customer);
     }
